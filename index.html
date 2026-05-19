@@ -181,27 +181,27 @@
         let iframeTitlePrefix = "Embedded video";
         let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 
-        // 4. Intelligently update settings if an Echo or YouTube signature is found
+        // 4. Intelligently update settings based on general domain signature matches
         if (extractedSrc.includes('youtube.com') || extractedSrc.includes('youtu.be')) {
             ariaLabel = "YouTube video player";
             iframeTitlePrefix = "YouTube video";
             iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
             statusDiv.textContent = `✓ YouTube pure 16:9 layout profile applied.`;
-        } else if (extractedSrc.includes('echo360.net.au/media')) {
-            ariaLabel = "Echo video player";
-            iframeTitlePrefix = "Echo video";
-            // True 16:9 video layout scaling + 56px fixed panel allocation
-            responsiveHeight = "calc(56.25vw + 56px)";
-            maxDesktopHeight = "452px"; 
-            statusDiv.textContent = `✓ Echo360 Public link profile applied (True 16:9 + 56px Toolbar expansion).`;
         } else if (extractedSrc.includes('external_tools/retrieve')) {
+            // First prioritised match: Check if it is a specific Canvas Root LTI Integration Tool link
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            // Updated: Aligned Institutional LTI to match the same pixel-perfect toolbar math
             responsiveHeight = "calc(56.25vw + 56px)";
             maxDesktopHeight = "452px";
             statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (True 16:9 + 56px Toolbar expansion).`;
+        } else if (extractedSrc.includes('echo360.net.au')) {
+            // Secondary match: Broad catch-all for any standard, public, or legacy Echo URLs
+            ariaLabel = "Echo video player";
+            iframeTitlePrefix = "Echo video";
+            responsiveHeight = "calc(56.25vw + 56px)";
+            maxDesktopHeight = "452px"; 
+            statusDiv.textContent = `✓ Echo360 Platform profile applied (True 16:9 + 56px Toolbar expansion).`;
         } else {
             statusDiv.textContent = `✓ Generic 16:9 video profile applied.`;
         }
