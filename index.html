@@ -1,0 +1,254 @@
+<style>
+    /* Import Lato font */
+    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
+    .fixer-container {
+        max-width: 650px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #009ABC;
+        border-radius: 8px;
+        font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #414042;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .fixer-container h3 {
+        color: #414042;
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+    .fixer-container .subtitle {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 15px;
+    }
+    .fixer-container label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    .fixer-container textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: monospace;
+        font-size: 0.9em;
+        color: inherit;
+        background-color: #fafafa;
+    }
+    .fixer-container .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .fixer-container button {
+        background-color: #009ABC;
+        color: white;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+        font-family: inherit;
+        transition: background-color 0.2s ease;
+        flex-grow: 1;
+    }
+    .fixer-container button:hover {
+        background-color: #006C91;
+    }
+    
+    #resetBtn {
+        background-color: #A9A9A9;
+    }
+    #resetBtn:hover {
+        background-color: #808080;
+    }
+
+    #fixedCodeOutput {
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-top: 5px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        min-height: 60px;
+        font-family: monospace;
+        color: #333;
+        border-radius: 4px;
+    }
+    #copyFixedBtn {
+        padding: 10px 12px;
+        font-size: 0.95em;
+        margin-top: 10px;
+        background-color: #009ABC; 
+        transition: background-color 0.2s ease;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #copyFixedBtn:hover {
+        background-color: #006C91;
+    }
+    .status-msg {
+        margin-top: 10px;
+        font-size: 0.9em;
+        font-weight: bold;
+        color: #009ABC;
+    }
+</style>
+
+<div class="fixer-container">
+    <h3>Canvas Legacy Video Code Fixer</h3>
+    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360 LTI, Public Echo, YouTube) to convert them instantly.</div>
+
+    <label for="brokenCode">Paste original problematic HTML block:</label>
+    <textarea id="brokenCode" rows="8" placeholder="Paste the entire block here, including the container divs and the source paragraph link underneath..."></textarea>
+
+    <div class="button-group">
+        <button onclick="fixMediaCode()">Convert & Fix Code</button>
+        <button id="resetBtn" onclick="resetFixer()">Reset</button>
+    </div>
+
+    <div id="extractionStatus" class="status-msg"></div>
+
+    <label for="fixedCodeOutput">Updated Sanitizer-Proof Code:</label>
+    <div id="fixedCodeOutput"></div>
+    
+    <button id="copyFixedBtn" onclick="copyFixedCode()" style="display: none;">Copy converted code to clipboard</button>
+</div>
+
+<script>
+    function fixMediaCode() {
+        const brokenCode = document.getElementById('brokenCode').value.trim();
+        const outputDiv = document.getElementById('fixedCodeOutput');
+        const statusDiv = document.getElementById('extractionStatus');
+        const copyBtn = document.getElementById('copyFixedBtn');
+
+        // Reset display states
+        statusDiv.textContent = "";
+        outputDiv.textContent = "";
+        copyBtn.style.display = 'none';
+
+        if (!brokenCode) {
+            outputDiv.textContent = 'Please paste a block of code to fix.';
+            return;
+        }
+
+        // 1. Extract Video Source URL [src]
+        const srcRegex = /src=["'](.*?)["']/i;
+        const srcMatch = brokenCode.match(srcRegex);
+        if (!srcMatch || srcMatch.length < 2) {
+            outputDiv.textContent = 'Error: Could not find an iframe [src] attribute in the code provided.';
+            return;
+        }
+        const extractedSrc = srcMatch[1];
+
+        // 2. Extract Metadata from the existing Source attribution line
+        // Looks for text matches inside anchor tags or text matching "Source: Title (UC, 2026)"
+        let extractedTitle = "Video Resource";
+        let extractedSource = "UC";
+        let extractedYear = "2026";
+
+        // Try to pull Title from anchor text string inside the block first
+        const anchorTextRegex = />Source:\s*<a[^>]*>([\s\S]*?)<\/a>/i;
+        const anchorMatch = brokenCode.match(anchorTextRegex);
+        
+        if (anchorMatch && anchorMatch[1]) {
+            extractedTitle = anchorMatch[1].trim();
+        } else {
+            // Fallback: try to grab the iframe title attribute if the attribution line isn't standard
+            const iframeTitleRegex = /title=["'](?:Echo video:|YouTube video:)?\s*(.*?)["']/i;
+            const iframeTitleMatch = brokenCode.match(iframeTitleRegex);
+            if (iframeTitleMatch && iframeTitleMatch[1]) {
+                extractedTitle = iframeTitleMatch[1].trim();
+            }
+        }
+
+        // Try to pull institutional attribution fields e.g., (UC, 2026)
+        const metadataRegex = /\(\s*([^,)]+)\s*,\s*([^)]+)\s*\)/;
+        const metaMatch = brokenCode.match(metadataRegex);
+        if (metaMatch) {
+            if (metaMatch[1]) extractedSource = metaMatch[1].trim();
+            if (metaMatch[2]) extractedYear = metaMatch[2].trim();
+        }
+
+        // 3. Determine Player Profile parameters based on the extracted URL signature
+        let iframeClass = "lti-embed";
+        let ariaLabel = "Echo video player";
+        let iframeTitlePrefix = "Echo video";
+        let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+
+        if (extractedSrc.includes('youtube.com') || extractedSrc.includes('youtu.be')) {
+            iframeClass = "video-embed";
+            ariaLabel = "YouTube video player";
+            iframeTitlePrefix = "YouTube video";
+            iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+            statusDiv.textContent = `✓ YouTube signature detected.`;
+        } else if (extractedSrc.includes('echo360.net.au/media')) {
+            iframeClass = "video-embed";
+            ariaLabel = "Echo video player";
+            iframeTitlePrefix = "Echo video";
+            statusDiv.textContent = `✓ Standard Echo360 Public link signature detected.`;
+        } else if (extractedSrc.includes('external_tools/retrieve')) {
+            statusDiv.textContent = `✓ Echo360 Institutional LTI signature detected.`;
+        } else {
+            iframeClass = "media-embed";
+            ariaLabel = "Media player";
+            iframeTitlePrefix = "Embedded video";
+            statusDiv.textContent = `✓ Standard iframe signature detected.`;
+        }
+
+        statusDiv.textContent += ` Extracted Meta — Title: "${extractedTitle}" | Citation: (${extractedSource}, ${extractedYear})`;
+
+        // 4. Construct the New Resilient Code Pattern
+        const convertedHtml = 
+`<div style="max-width: 704px; min-width: 320px; width: 100%; margin: 0 auto;">
+    <div style="width: 100%; height: 65vw; max-height: 475px; overflow: hidden; background: #ffffff; border-radius: 4px; border: 1px solid #cdcdcd;">
+        <iframe 
+            class="${iframeClass}" 
+            style="width: 100%; height: 100%; border: none; display: block;" 
+            title="${iframeTitlePrefix}: ${extractedTitle}" 
+            src="${extractedSrc}" 
+            loading="lazy" 
+            allowfullscreen="allowfullscreen" 
+            allow="${iframeAllow}" 
+            aria-label="${ariaLabel}">
+        </iframe>
+    </div>
+</div>
+<p style="text-align: center; margin-top: 12px;">Source: <a href="${extractedSrc}" target="_blank" rel="noopener">${extractedTitle}</a> (${extractedSource}, ${extractedYear})</p>`;
+
+        // 5. Render to Screen
+        outputDiv.textContent = convertedHtml;
+        copyBtn.style.display = 'block';
+    }
+
+    function copyFixedCode() {
+        const outputDiv = document.getElementById('fixedCodeOutput');
+        const code = outputDiv.textContent;
+        const copyBtn = document.getElementById('copyFixedBtn');
+        
+        if (!code || code.includes('Please paste') || code.includes('Error:')) return;
+
+        navigator.clipboard.writeText(code).then(() => {
+            copyBtn.textContent = 'Copied Code Successfully!';
+            setTimeout(() => {
+                copyBtn.textContent = 'Copy converted code to clipboard';
+            }, 2000);
+        }).catch(err => {
+            alert('Failed to automatically copy. Please select the code text inside the box manually.');
+        });
+    }
+
+    function resetFixer() {
+        document.getElementById('brokenCode').value = '';
+        document.getElementById('fixedCodeOutput').textContent = '';
+        document.getElementById('extractionStatus').textContent = '';
+        document.getElementById('copyFixedBtn').style.display = 'none';
+    }
+</script>
