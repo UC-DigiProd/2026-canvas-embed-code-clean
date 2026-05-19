@@ -103,20 +103,20 @@
 </style>
 
 <div class="fixer-container">
-    <h3>Canvas Legacy Video Code Fixer</h3>
-    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360 LTI, Public Echo, YouTube) to convert them instantly.</div>
+    <h3>Canvas legacy video embed code fixer</h3>
+    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360, YouTube, Vimeo) to convert them instantly.</div>
 
     <label for="brokenCode">Paste original problematic HTML block:</label>
     <textarea id="brokenCode" rows="8" placeholder="Paste the entire block here, including the container divs and the source paragraph link underneath..."></textarea>
 
     <div class="button-group">
-        <button onclick="fixMediaCode()">Convert & Fix Code</button>
+        <button onclick="fixMediaCode()">Convert & fix code</button>
         <button id="resetBtn" onclick="resetFixer()">Reset</button>
     </div>
 
     <div id="extractionStatus" class="status-msg"></div>
 
-    <label for="fixedCodeOutput">Updated Sanitizer-Proof Code:</label>
+    <label for="fixedCodeOutput">Updated s Canvas Rich Content Editor (RCE) sanitizer-proof code:</label>
     <div id="fixedCodeOutput"></div>
     
     <button id="copyFixedBtn" onclick="copyFixedCode()" style="display: none;">Copy converted code to clipboard</button>
@@ -159,7 +159,7 @@
         if (anchorMatch && anchorMatch[1]) {
             extractedTitle = anchorMatch[1].trim();
         } else {
-            const iframeTitleRegex = /title=["'](?:Echo video:|YouTube video:)?\s*(.*?)["']/i;
+            const iframeTitleRegex = /title=["'](?:Echo video:|YouTube video:|Vimeo video:)?\s*(.*?)["']/i;
             const iframeTitleMatch = brokenCode.match(iframeTitleRegex);
             if (iframeTitleMatch && iframeTitleMatch[1]) {
                 extractedTitle = iframeTitleMatch[1].trim();
@@ -173,7 +173,7 @@
             if (metaMatch[2]) extractedYear = metaMatch[2].trim();
         }
 
-        // 3. Set Default Base Math Profile (Pure 16:9 for YouTube / Standard Video)
+        // 3. Set Default Base Math Profile (Pure 16:9 for Standard Video)
         let responsiveHeight = "56.25vw"; 
         let maxDesktopHeight = "396px";   // 704 * 56.25%
         let iframeClass = "video-embed";
@@ -191,7 +191,7 @@
             iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
             
             // Convert YouTube embed links back to highly accessible user watch pages for citation permalinks
-            const ytIdRegex = /(?:embed\/|v=|v\/|youtu\.be\/|\/v\/|^)([a-zA-M0-9_-]{11})/i;
+            const ytIdRegex = /(?:embed\/|v=|v\/|youtu\.be\/|\/v\/)([a-zA-Z0-9_-]{11})/i;
             const ytMatch = extractedSrc.match(ytIdRegex);
             if (ytMatch && ytMatch[1]) {
                 sourcePermalink = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
@@ -200,6 +200,21 @@
                 statusDiv.textContent = `✓ YouTube layout profile applied.`;
             }
             
+        } else if (extractedSrc.includes('vimeo.com')) {
+            ariaLabel = "Vimeo video player";
+            iframeTitlePrefix = "Vimeo video";
+            iframeAllow = "autoplay; fullscreen; picture-in-picture; clipboard-write";
+            
+            // Convert Vimeo embed links back to user watch pages for citation permalinks
+            const vimeoIdRegex = /(?:player\.vimeo\.com\/video\/|vimeo\.com\/)(\d+)/i;
+            const vimeoMatch = extractedSrc.match(vimeoIdRegex);
+            if (vimeoMatch && vimeoMatch[1]) {
+                sourcePermalink = `https://vimeo.com/${vimeoMatch[1]}`;
+                statusDiv.textContent = `✓ Vimeo pure 16:9 layout profile applied + converted to Watch page permalink.`;
+            } else {
+                statusDiv.textContent = `✓ Vimeo layout profile applied.`;
+            }
+
         } else if (extractedSrc.includes('external_tools/retrieve')) {
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
