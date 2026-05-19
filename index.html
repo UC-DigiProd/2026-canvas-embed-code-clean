@@ -104,7 +104,7 @@
 
 <div class="fixer-container">
     <h3>Canvas Legacy Video Code Fixer</h3>
-    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360, YouTube, Vimeo) to convert them instantly into sanitizer-proof, preview-blocked layouts.</div>
+    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360 or YouTube) to convert them instantly into sanitizer-proof, preview-blocked layouts.</div>
 
     <label for="brokenCode">Paste original problematic HTML block:</label>
     <textarea id="brokenCode" rows="8" placeholder="Paste the entire block here, including the container divs and the source paragraph link underneath..."></textarea>
@@ -159,7 +159,7 @@
         if (anchorMatch && anchorMatch[1]) {
             extractedTitle = anchorMatch[1].trim();
         } else {
-            const iframeTitleRegex = /title=["'](?:Echo video:|YouTube video:|Vimeo video:)?\s*(.*?)["']/i;
+            const iframeTitleRegex = /title=["'](?:Echo video:|YouTube video:)?\s*(.*?)["']/i;
             const iframeTitleMatch = brokenCode.match(iframeTitleRegex);
             if (iframeTitleMatch && iframeTitleMatch[1]) {
                 extractedTitle = iframeTitleMatch[1].trim();
@@ -173,24 +173,22 @@
             if (metaMatch[2]) extractedYear = metaMatch[2].trim();
         }
 
-        // 3. Set Default Base Math Profile (Pure 16:9 for Standard Video)
+        // 3. Set Default Base Math Profile
         let responsiveHeight = "56.25vw"; 
-        let maxDesktopHeight = "396px";   // 704 * 56.25%
+        let maxDesktopHeight = "396px";
         let iframeClass = "video-embed";
         let ariaLabel = "Video player";
         let iframeTitlePrefix = "Embedded video";
         let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
         
-        // This variable tracks the URL targeted by the visible citation link text anchor
         let sourcePermalink = extractedSrc;
 
-        // 4. Intelligently update settings based on general domain signature matches
+        // 4. Strict Domain Allowlist & Profile Routing
         if (extractedSrc.includes('youtube.com') || extractedSrc.includes('youtu.be')) {
             ariaLabel = "YouTube video player";
             iframeTitlePrefix = "YouTube video";
             iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
             
-            // Convert YouTube embed links back to highly accessible user watch pages for citation permalinks
             const ytIdRegex = /(?:embed\/|v=|v\/|youtu\.be\/|\/v\/)([a-zA-Z0-9_-]{11})/i;
             const ytMatch = extractedSrc.match(ytIdRegex);
             if (ytMatch && ytMatch[1]) {
@@ -200,21 +198,6 @@
                 statusDiv.textContent = `✓ YouTube layout profile applied.`;
             }
             
-        } else if (extractedSrc.includes('vimeo.com')) {
-            ariaLabel = "Vimeo video player";
-            iframeTitlePrefix = "Vimeo video";
-            iframeAllow = "autoplay; fullscreen; picture-in-picture; clipboard-write";
-            
-            // Convert Vimeo embed links back to user watch pages for citation permalinks
-            const vimeoIdRegex = /(?:player\.vimeo\.com\/video\/|vimeo\.com\/)(\d+)/i;
-            const vimeoMatch = extractedSrc.match(vimeoIdRegex);
-            if (vimeoMatch && vimeoMatch[1]) {
-                sourcePermalink = `https://vimeo.com/${vimeoMatch[1]}`;
-                statusDiv.textContent = `✓ Vimeo pure 16:9 layout profile applied + converted to Watch page permalink.`;
-            } else {
-                statusDiv.textContent = `✓ Vimeo layout profile applied.`;
-            }
-
         } else if (extractedSrc.includes('external_tools/retrieve')) {
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
@@ -222,19 +205,25 @@
             responsiveHeight = "calc(56.25vw + 56px)";
             maxDesktopHeight = "452px";
             statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (True 16:9 + 56px Toolbar expansion).`;
+            
         } else if (extractedSrc.includes('echo360.net.au')) {
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
             responsiveHeight = "calc(56.25vw + 56px)";
             maxDesktopHeight = "452px"; 
             statusDiv.textContent = `✓ Echo360 Platform profile applied (True 16:9 + 56px Toolbar expansion).`;
+            
         } else {
-            statusDiv.textContent = `✓ Generic 16:9 video profile applied.`;
+            // Strict halt for unsupported platforms
+            statusDiv.textContent = `⚠️ Unsupported video platform detected.`;
+            outputDiv.textContent = `Please contact hollie.herne@canberra.edu.au for assistance with other video platforms.`;
+            copyBtn.style.display = 'none';
+            return;
         }
 
         statusDiv.textContent += ` Extracted Meta — Title: "${extractedTitle}" | Citation: (${extractedSource}, ${extractedYear})`;
 
-        // 5. Construct the Updated Layout Code block with data-api-retarget="false"
+        // 5. Construct the Updated Layout Code block
         const convertedHtml = 
 `<div style="max-width: 704px; min-width: 320px; width: 100%; margin: 0 auto;">
     <div style="width: 100%; height: ${responsiveHeight}; max-height: ${maxDesktopHeight}; overflow: hidden; background: #000000; border-radius: 4px; border: 1px solid #cdcdcd;">
@@ -262,7 +251,7 @@
         const code = outputDiv.textContent;
         const copyBtn = document.getElementById('copyFixedBtn');
         
-        if (!code || code.includes('Please paste') || code.includes('Error:')) return;
+        if (!code || code.includes('Please paste') || code.includes('Error:') || code.includes('Please contact')) return;
 
         navigator.clipboard.writeText(code).then(() => {
             copyBtn.textContent = 'Copied Code Successfully!';
