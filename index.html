@@ -190,10 +190,10 @@
         } else if (extractedSrc.includes('echo360.net.au/media')) {
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            // Set to 55.5vw + 32px controls area offset to eliminate left/right gap lines entirely
-            responsiveHeight = "calc(55.5vw + 32px)";
-            maxDesktopHeight = "423px"; 
-            statusDiv.textContent = `✓ Echo360 Public link profile applied (optimized aspect match).`;
+            // True 16:9 layout scaling + 56px fixed tracking control container height allocation
+            responsiveHeight = "calc(56.25vw + 56px)";
+            maxDesktopHeight = "452px"; // 396px base 16:9 framework + 56px white controls dock
+            statusDiv.textContent = `✓ Echo360 Public link profile applied (True 16:9 + 56px Toolbar expansion).`;
         } else if (extractedSrc.includes('external_tools/retrieve')) {
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
