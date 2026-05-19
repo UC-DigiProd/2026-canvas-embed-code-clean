@@ -103,20 +103,20 @@
 </style>
 
 <div class="fixer-container">
-    <h3>Canvas Legacy Video Code Fixer</h3>
+    <h3>2026 Canvas video embed code fixer</h3>
     <div class="subtitle">Paste broken responsive video HTML blocks (Echo360 or YouTube) to convert them instantly into sanitizer-proof, preview-blocked layouts.</div>
 
     <label for="brokenCode">Paste original problematic HTML block:</label>
-    <textarea id="brokenCode" rows="8" placeholder="Paste the entire block here, including the container divs and the source paragraph link underneath..."></textarea>
+    <textarea id="brokenCode" rows="8" placeholder="Please paste the entire block here, including the container divs <div> and the source paragraph </p> link underneath..."></textarea>
 
     <div class="button-group">
-        <button onclick="fixMediaCode()">Convert & Fix Code</button>
+        <button onclick="fixMediaCode()">Convert & fix code</button>
         <button id="resetBtn" onclick="resetFixer()">Reset</button>
     </div>
 
     <div id="extractionStatus" class="status-msg"></div>
 
-    <label for="fixedCodeOutput">Updated Sanitizer-Proof Code:</label>
+    <label for="fixedCodeOutput">Updated Rich Content Editor (RCE) sanitizer-proof code:</label>
     <div id="fixedCodeOutput"></div>
     
     <button id="copyFixedBtn" onclick="copyFixedCode()" style="display: none;">Copy converted code to clipboard</button>
