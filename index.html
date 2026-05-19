@@ -190,10 +190,10 @@
         } else if (extractedSrc.includes('echo360.net.au/media')) {
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            // Fine-tuned to 57vw + 32px to squeeze out residual side-letterboxing on public links
-            responsiveHeight = "calc(57vw + 32px)";
-            maxDesktopHeight = "433px"; // 401px base layout + 32px control offset
-            statusDiv.textContent = `✓ Echo360 Public link profile applied (optimized 16:9 aspect match).`;
+            // Set to 55.5vw + 32px controls area offset to eliminate left/right gap lines entirely
+            responsiveHeight = "calc(55.5vw + 32px)";
+            maxDesktopHeight = "423px"; 
+            statusDiv.textContent = `✓ Echo360 Public link profile applied (optimized aspect match).`;
         } else if (extractedSrc.includes('external_tools/retrieve')) {
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
