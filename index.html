@@ -181,7 +181,7 @@
         let iframeTitlePrefix = "Embedded video";
         let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 
-        // 4. Intelligently update settings if an Echo profile footprint is detected
+        // 4. Intelligently update settings if an Echo or YouTube signature is found
         if (extractedSrc.includes('youtube.com') || extractedSrc.includes('youtu.be')) {
             ariaLabel = "YouTube video player";
             iframeTitlePrefix = "YouTube video";
@@ -190,18 +190,18 @@
         } else if (extractedSrc.includes('echo360.net.au/media')) {
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            // True 16:9 layout scaling + 56px fixed tracking control container height allocation
+            // True 16:9 video layout scaling + 56px fixed panel allocation
             responsiveHeight = "calc(56.25vw + 56px)";
-            maxDesktopHeight = "452px"; // 396px base 16:9 framework + 56px white controls dock
+            maxDesktopHeight = "452px"; 
             statusDiv.textContent = `✓ Echo360 Public link profile applied (True 16:9 + 56px Toolbar expansion).`;
         } else if (extractedSrc.includes('external_tools/retrieve')) {
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            // Echo LTI requires expanded vertical space to display its massive embedded white bottom toolbar
-            responsiveHeight = "65vw";
-            maxDesktopHeight = "475px";
-            statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (adjusted for LTI actions panel footprint).`;
+            // Updated: Aligned Institutional LTI to match the same pixel-perfect toolbar math
+            responsiveHeight = "calc(56.25vw + 56px)";
+            maxDesktopHeight = "452px";
+            statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (True 16:9 + 56px Toolbar expansion).`;
         } else {
             statusDiv.textContent = `✓ Generic 16:9 video profile applied.`;
         }
