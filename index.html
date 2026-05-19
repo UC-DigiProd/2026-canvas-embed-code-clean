@@ -103,20 +103,20 @@
 </style>
 
 <div class="fixer-container">
-    <h3>Canvas legacy video embed code fixer</h3>
-    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360, YouTube, Vimeo) to convert them instantly.</div>
+    <h3>Canvas Legacy Video Code Fixer</h3>
+    <div class="subtitle">Paste broken responsive video HTML blocks (Echo360, YouTube, Vimeo) to convert them instantly into sanitizer-proof, preview-blocked layouts.</div>
 
     <label for="brokenCode">Paste original problematic HTML block:</label>
     <textarea id="brokenCode" rows="8" placeholder="Paste the entire block here, including the container divs and the source paragraph link underneath..."></textarea>
 
     <div class="button-group">
-        <button onclick="fixMediaCode()">Convert & fix code</button>
+        <button onclick="fixMediaCode()">Convert & Fix Code</button>
         <button id="resetBtn" onclick="resetFixer()">Reset</button>
     </div>
 
     <div id="extractionStatus" class="status-msg"></div>
 
-    <label for="fixedCodeOutput">Updated s Canvas Rich Content Editor (RCE) sanitizer-proof code:</label>
+    <label for="fixedCodeOutput">Updated Sanitizer-Proof Code:</label>
     <div id="fixedCodeOutput"></div>
     
     <button id="copyFixedBtn" onclick="copyFixedCode()" style="display: none;">Copy converted code to clipboard</button>
@@ -234,7 +234,7 @@
 
         statusDiv.textContent += ` Extracted Meta — Title: "${extractedTitle}" | Citation: (${extractedSource}, ${extractedYear})`;
 
-        // 5. Construct the Updated Layout Code block
+        // 5. Construct the Updated Layout Code block with data-api-retarget="false"
         const convertedHtml = 
 `<div style="max-width: 704px; min-width: 320px; width: 100%; margin: 0 auto;">
     <div style="width: 100%; height: ${responsiveHeight}; max-height: ${maxDesktopHeight}; overflow: hidden; background: #000000; border-radius: 4px; border: 1px solid #cdcdcd;">
@@ -250,7 +250,7 @@
         </iframe>
     </div>
 </div>
-<p style="text-align: center; margin-top: 12px;">Source: <a href="${sourcePermalink}" target="_blank" rel="noopener">${extractedTitle}</a> (${extractedSource}, ${extractedYear})</p>`;
+<p style="text-align: center; margin-top: 12px;">Source: <a href="${sourcePermalink}" data-api-retarget="false" target="_blank" rel="noopener">${extractedTitle}</a> (${extractedSource}, ${extractedYear})</p>`;
 
         // 6. Render generated text blocks to clipboard receiver
         outputDiv.textContent = convertedHtml;
