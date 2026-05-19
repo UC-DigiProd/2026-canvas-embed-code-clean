@@ -173,39 +173,42 @@
             if (metaMatch[2]) extractedYear = metaMatch[2].trim();
         }
 
-        // 3. Set Default 16:9 Dimensional Math (Eliminates Black Bars)
-        let responsiveHeight = "56.25vw"; // Pure 16:9 Scaler
-        let maxDesktopHeight = "396px";   // 704px width * 56.25%
+        // 3. Set Default Base Math Profile (Pure 16:9 for YouTube / Standard Video)
+        let responsiveHeight = "56.25vw"; 
+        let maxDesktopHeight = "396px";   // 704 * 56.25%
         let iframeClass = "video-embed";
         let ariaLabel = "Video player";
         let iframeTitlePrefix = "Embedded video";
         let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 
-        // 4. Fine-tune rules selectively depending on platform signature
+        // 4. Intelligently update settings if an Echo profile footprint is detected
         if (extractedSrc.includes('youtube.com') || extractedSrc.includes('youtu.be')) {
             ariaLabel = "YouTube video player";
             iframeTitlePrefix = "YouTube video";
             iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
-            statusDiv.textContent = `✓ YouTube 16:9 profile applied.`;
+            statusDiv.textContent = `✓ YouTube pure 16:9 layout profile applied.`;
         } else if (extractedSrc.includes('echo360.net.au/media')) {
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            statusDiv.textContent = `✓ Echo360 Public 16:9 profile applied.`;
+            // Public Echo link features controls requiring 16:9 video workspace height + 32px
+            responsiveHeight = "calc(56.25vw + 32px)";
+            maxDesktopHeight = "428px"; // 396px base + 32px controls padding
+            statusDiv.textContent = `✓ Echo360 Public link profile applied (16:9 video + 32px control offset).`;
         } else if (extractedSrc.includes('external_tools/retrieve')) {
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
-            // Echo LTI requires slight extra vertical space for its white actions footer panel
+            // Echo LTI requires expanded vertical space to display its massive embedded white bottom toolbar
             responsiveHeight = "65vw";
             maxDesktopHeight = "475px";
-            statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (adjusted for toolbar footprint).`;
+            statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (adjusted for LTI actions panel footprint).`;
         } else {
             statusDiv.textContent = `✓ Generic 16:9 video profile applied.`;
         }
 
         statusDiv.textContent += ` Extracted Meta — Title: "${extractedTitle}" | Citation: (${extractedSource}, ${extractedYear})`;
 
-        // 5. Construct the Corrected Responsive Code
+        // 5. Construct the Updated Layout Code block
         const convertedHtml = 
 `<div style="max-width: 704px; min-width: 320px; width: 100%; margin: 0 auto;">
     <div style="width: 100%; height: ${responsiveHeight}; max-height: ${maxDesktopHeight}; overflow: hidden; background: #000000; border-radius: 4px; border: 1px solid #cdcdcd;">
@@ -223,7 +226,7 @@
 </div>
 <p style="text-align: center; margin-top: 12px;">Source: <a href="${extractedSrc}" target="_blank" rel="noopener">${extractedTitle}</a> (${extractedSource}, ${extractedYear})</p>`;
 
-        // 6. Render to Screen
+        // 6. Render generated text blocks to clipboard receiver
         outputDiv.textContent = convertedHtml;
         copyBtn.style.display = 'block';
     }
