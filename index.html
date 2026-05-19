@@ -180,15 +180,27 @@
         let ariaLabel = "Video player";
         let iframeTitlePrefix = "Embedded video";
         let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+        
+        // This variable tracks the URL targeted by the visible citation link text anchor
+        let sourcePermalink = extractedSrc;
 
         // 4. Intelligently update settings based on general domain signature matches
         if (extractedSrc.includes('youtube.com') || extractedSrc.includes('youtu.be')) {
             ariaLabel = "YouTube video player";
             iframeTitlePrefix = "YouTube video";
             iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
-            statusDiv.textContent = `✓ YouTube pure 16:9 layout profile applied.`;
+            
+            // Convert YouTube embed links back to highly accessible user watch pages for citation permalinks
+            const ytIdRegex = /(?:embed\/|v=|v\/|youtu\.be\/|\/v\/|^)([a-zA-M0-9_-]{11})/i;
+            const ytMatch = extractedSrc.match(ytIdRegex);
+            if (ytMatch && ytMatch[1]) {
+                sourcePermalink = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
+                statusDiv.textContent = `✓ YouTube pure 16:9 layout profile applied + converted to Watch page permalink.`;
+            } else {
+                statusDiv.textContent = `✓ YouTube layout profile applied.`;
+            }
+            
         } else if (extractedSrc.includes('external_tools/retrieve')) {
-            // First prioritised match: Check if it is a specific Canvas Root LTI Integration Tool link
             iframeClass = "lti-embed";
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
@@ -196,7 +208,6 @@
             maxDesktopHeight = "452px";
             statusDiv.textContent = `✓ Echo360 Institutional LTI profile applied (True 16:9 + 56px Toolbar expansion).`;
         } else if (extractedSrc.includes('echo360.net.au')) {
-            // Secondary match: Broad catch-all for any standard, public, or legacy Echo URLs
             ariaLabel = "Echo video player";
             iframeTitlePrefix = "Echo video";
             responsiveHeight = "calc(56.25vw + 56px)";
@@ -224,7 +235,7 @@
         </iframe>
     </div>
 </div>
-<p style="text-align: center; margin-top: 12px;">Source: <a href="${extractedSrc}" target="_blank" rel="noopener">${extractedTitle}</a> (${extractedSource}, ${extractedYear})</p>`;
+<p style="text-align: center; margin-top: 12px;">Source: <a href="${sourcePermalink}" target="_blank" rel="noopener">${extractedTitle}</a> (${extractedSource}, ${extractedYear})</p>`;
 
         // 6. Render generated text blocks to clipboard receiver
         outputDiv.textContent = convertedHtml;
